@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Zig
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: "0.16.0"
+
+      # Format check
+      - name: Check formatting
+        run: zig fmt --check .
+
+      # Run tests
+      - name: Run test script
+        run: ./run_tests.sh
+
+      # Build project
+      - name: Build
+        run: zig build
+
+      # Success message
+      - name: Done
+        run: echo "completed actions"
