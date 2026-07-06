@@ -40,8 +40,8 @@ test "Tensor.set" {
     const shape = [_]usize{ 3, 3 };
     var t = try Tensor(f32).zeroes(allocator, shape[0..]);
     defer t.destroy();
-    t.set([_]usize{ 2, 2 }, 10);
-    try std.testing.expectEqual(@as(f32, 10), t.get(&[_]usize{ 2, 2 }).*);
+    try t.set([_]usize{ 2, 2 }, 10);
+    try std.testing.expectEqual(@as(f32, 10), (try t.get(&[_]usize{ 2, 2 })).*);
 }
 
 // -------------------------------- Trying different debug prints ------------------------------------
@@ -60,10 +60,10 @@ test "Tensor.debug_print.1d" {
     const shape = [_]usize{4};
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
-    t.set([_]usize{0}, 10);
-    t.set([_]usize{1}, 20);
-    t.set([_]usize{2}, 30);
-    t.set([_]usize{3}, 40);
+    try t.set([_]usize{0}, 10);
+    try t.set([_]usize{1}, 20);
+    try t.set([_]usize{2}, 30);
+    try t.set([_]usize{3}, 40);
     t.debug_print();
 }
 
@@ -73,12 +73,12 @@ test "Tensor.debug_print.2d" {
     const shape = [_]usize{ 2, 3 };
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
-    t.set([_]usize{ 0, 0 }, 1);
-    t.set([_]usize{ 0, 1 }, 2);
-    t.set([_]usize{ 0, 2 }, 3);
-    t.set([_]usize{ 1, 0 }, 4);
-    t.set([_]usize{ 1, 1 }, 5);
-    t.set([_]usize{ 1, 2 }, 6);
+    try t.set([_]usize{ 0, 0 }, 1);
+    try t.set([_]usize{ 0, 1 }, 2);
+    try t.set([_]usize{ 0, 2 }, 3);
+    try t.set([_]usize{ 1, 0 }, 4);
+    try t.set([_]usize{ 1, 1 }, 5);
+    try t.set([_]usize{ 1, 2 }, 6);
     t.debug_print();
 }
 
@@ -92,7 +92,7 @@ test "Tensor.debug_print.3d" {
     for (0..2) |i| {
         for (0..2) |j| {
             for (0..2) |k| {
-                t.set([_]usize{ i, j, k }, val);
+                try t.set([_]usize{ i, j, k }, val);
                 val += 1;
             }
         }

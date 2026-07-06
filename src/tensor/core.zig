@@ -14,11 +14,17 @@ pub fn Tensor(comptime T: type) type {
 
         const Self = @This(); // so methods can directly use 'Self' instead of @This() everywhere
 
+        pub const Error = error{IndexOutOfBounds};
+
         // --------------------- constructors and destructors --------------------------
 
         /// The constructor for the tensor struct
         /// requires allocator and shape as input
         pub fn init(allocator: std.mem.Allocator, shape: []const usize) !Self {
+            comptime { 
+                if (@typeInfo(T) != .int and @typeInfo(T) != .float)
+                    @compileError("Tensor can only contain numerical types\n"); 
+            }
             // because we dont own the memory the original shape points to:
             const shape_copy = try allocator.dupe(usize, shape); // duplicates
             errdefer allocator.free(shape_copy);
@@ -49,24 +55,27 @@ pub fn Tensor(comptime T: type) type {
         // ---------------------------- other methods -------------------------------------
 
         /// converts multi-dimensional indices into a single index for the flattened _data array
-        fn offset(self: Self, indices: []const usize) usize {
-            // EXPLAINATION :
-            // user wants : [1, 2]
-            // but we have flattened array stored
-            // so it converts it into the index we want
-
-            std.debug.assert(indices.len == self._shape.len);
+        fn offset(self: Self, indices: []const usize) Error!usize {
+            if (indices.len != self._shape.len) return error.IndexOutOfBounds;
             var off: usize = 0;
             for (indices, 0..) |idx, i| {
-                std.debug.assert(idx < self._shape[i]);
-                off += idx * self._strides[i]; // standard row major calculation
+                if (idx >= self._shape[i]) return error.IndexOutOfBounds;
+                off += idx * self._strides[i];
             }
             return off;
         }
-        /// returns the value of the index passed by the user
-        /// internally calls the offset function to get the index in row-major format
-        pub fn get(self: Self, indices: []const usize) *T {
-            return &self._data[self.offset(indices)];
+        /// returns the value at the given indices (bounds-checked)
+        pub fn get(self: Self, indices: []const usize) Error!*T {
+            return &self._data[try self.offset(indices)];
+        }
+
+        /// returns the value at the given indices (no bounds checking)
+        pub fn getUnchecked(self: Self, indices: []const usize) *T {
+            var off: usize = 0;
+            for (indices, 0..) |idx, i| {
+                off += idx * self._strides[i];
+            }
+            return &self._data[off];
         }
 
         /// fills the whole tensor with the value taken in input
@@ -86,9 +95,9 @@ pub fn Tensor(comptime T: type) type {
             return temp_t;
         }
 
-        /// Sets the value of the particular index to the val
-        pub fn set(self: *Self, indices: []const usize, val: T) void {
-            const idx = self.offset(indices);
+        /// Sets the value at the given indices (bounds-checked)
+        pub fn set(self: *Self, indices: []const usize, val: T) Error!void {
+            const idx = try self.offset(indices);
             self._data[idx] = val;
         }
 
@@ -115,30 +124,16 @@ pub fn Tensor(comptime T: type) type {
         }
 
         /// Set the particular column of the tensor to the new one
-        /// Uses stride-aware iteration so it works correctly with transposed tensors
+        /// Only works for 2D tensors
         pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
-            const n = self._shape.len;
-            if (n == 1) {
-                std.debug.assert(col_num < self._shape[0]);
-                std.debug.assert(new_col.len == 1);
-                self._data[col_num] = new_col[0];
-                return;
-            }
-            const outer_dims = self._shape[0 .. n - 1];
-            const outer_count = utils.num_elements(outer_dims);
-            std.debug.assert(col_num < self._shape[n - 1]);
-            std.debug.assert(new_col.len == outer_count);
-            const col_base = col_num * self._strides[n - 1];
-            for (0..outer_count) |flat_i| {
-                var off = col_base;
-                var remaining = flat_i;
-                var d: usize = n - 1;
-                while (d > 0) {
-                    d -= 1;
-                    off += (remaining % self._shape[d]) * self._strides[d];
-                    remaining /= self._shape[d];
-                }
-                self._data[off] = new_col[flat_i];
+            std.debug.assert(self._shape.len == 2);
+            const rows = self._shape[0];
+            const cols = self._shape[1];
+            std.debug.assert(col_num < cols);
+            std.debug.assert(new_col.len == rows);
+            for (0..rows) |row| {
+                const idx = row * self._strides[0] + col_num * self._strides[1];
+                self._data[idx] = new_col[row];
             }
         }
 
