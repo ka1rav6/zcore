@@ -35,6 +35,7 @@ Study:
 _what each version should have_
 
 ### Version 0.1 - 0.2
+- Define NaN
 - Tensor Representation + optimization
 - Shape
 - Stride
@@ -89,6 +90,10 @@ _what each version should have_
 
 ### Version 2.0
 
+ [[ TO BE CONTINUED ]]
+
+
+---
 
 
 
@@ -96,6 +101,19 @@ _what each version should have_
 
 
 
+
+## Design Choices to implement
+
+1. NaN -> defining on my own
+2. +-0, += inf
+3. DType : implementing myself
+
+```zig
+// something like this: 
+const DType = enum { f32, f64, i32, i64, bool };
+```
+
+Follow IEEE as much as possible
 
 
 
