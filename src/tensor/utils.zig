@@ -3,8 +3,8 @@ const std = @import("std");
 // NOTE: planning on storing data in tensors in flattened row-major format
 
 /// Computes the strides, based on the shape, required to move around the tensor
-pub fn computeStrides(shape: []const usize, strides: []usize) void {
-    // to see how strides actually work, check the "computeStrides" test
+pub fn compute_strides(shape: []const usize, strides: []usize) void {
+    // to see how strides actually work, check the "compute_strides" test
     if (shape.len == 0) return;
     var i = shape.len - 1;
     strides[i] = 1;
@@ -16,7 +16,7 @@ pub fn computeStrides(shape: []const usize, strides: []usize) void {
 
 /// returns the total number of elements inside the tensor
 /// basically _data.size();
-pub fn numElements(shape: []const usize) usize {
+pub fn num_elements(shape: []const usize) usize {
     var total: usize = 1;
     for (shape) |d| { // d = dimension
         total *= d;

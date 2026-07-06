@@ -23,14 +23,14 @@ pub fn Tensor(comptime T: type) type {
             const shape_copy = try allocator.dupe(usize, shape); // duplicates
             // allocating the strides on the heap too
             const strides = try allocator.alloc(usize, shape.len);
-            utils.computeStrides(shape_copy, strides);
-            const data = try allocator.alloc(T, utils.numElements(shape));
+            utils.compute_strides(shape_copy, strides);
+            const data = try allocator.alloc(T, utils.num_elements(shape));
 
             return Self{
-                ._data = data,
-                ._allocator = allocator,
-                ._shape = shape_copy,
-                ._strides = strides,
+                ._data      = data      ,
+                ._allocator = allocator ,
+                ._shape     = shape_copy,
+                ._strides   = strides   ,
             };
         }
 
@@ -97,7 +97,7 @@ pub fn Tensor(comptime T: type) type {
         /// Tensor(u32): shape={ 2, 3 }, strides={ 3, 1 }
         /// [[1, 2, 3],
         ///  [4, 5, 6]]
-        pub fn debugPrint(self: Self) void {
+        pub fn debug_print(self: Self) void {
             const T_name = @typeName(T);
             std.debug.print("Tensor({s}): shape={any}, strides={any}\n", .{ T_name, self._shape, self._strides });
 
@@ -111,7 +111,7 @@ pub fn Tensor(comptime T: type) type {
             // We use a static function inside a nested struct so it can call itself
             // while still having access to the comptime type `T` from the outer scope.
             const print_impl = struct {
-                fn printDim(dim: usize, base: usize, data: []const T, shape: []const usize, strides: []const usize) void {
+                fn print_dim(dim: usize, base: usize, data: []const T, shape: []const usize, strides: []const usize) void {
                     if (dim == shape.len - 1) {
                         // Innermost dimension: print the actual data values
                         std.debug.print("[", .{});
@@ -128,12 +128,12 @@ pub fn Tensor(comptime T: type) type {
                                 std.debug.print(",\n", .{});
                                 for (0..dim + 1) |_| std.debug.print(" ", .{});
                             }
-                            printDim(dim + 1, base + i * strides[dim], data, shape, strides);
+                            print_dim(dim + 1, base + i * strides[dim], data, shape, strides);
                         }
                         std.debug.print("]", .{});
                     }
                 }
-            }.printDim;
+            }.print_dim;
 
             print_impl(0, 0, self._data, self._shape, self._strides);
             std.debug.print("\n", .{});
@@ -162,7 +162,7 @@ pub fn Tensor(comptime T: type) type {
                 return;
             }
             const outer_dims = self._shape[0 .. n - 1];
-            const outer_count = utils.numElements(outer_dims);
+            const outer_count = utils.num_elements(outer_dims);
             std.debug.assert(col_num < self._shape[n - 1]);
             std.debug.assert(new_col.len == outer_count);
             const col_stride = self._strides[n - 2];
