@@ -35,12 +35,12 @@ Study:
 _what each version should have_
 
 ### Version 0.1 - 0.2
-- Define NaN
-- Tensor Representation + optimization
+- Tensor Representation
 - Shape
 - Stride
 - Memory Management (tensor storage etc)
 - Supporting different numerical types (f32, f64, i32, i64, u8, bool, i64...)
+- Define NaN
 - Tensor Constructions : copying, moving, empty(), full(), zeroes() etc
 - Tensor Indexing
 
