@@ -65,17 +65,27 @@ pub fn Tensor(comptime T: type) type {
             return off;
         }
         /// returns the value at the given indices (bounds-checked)
-        pub fn get(self: Self, indices: []const usize) Error!*T {
+        pub fn get(self: Self, indices: []const usize) Error!*const T {
             return &self._data[try self.offset(indices)];
         }
 
         /// returns the value at the given indices (no bounds checking)
-        pub fn getUnchecked(self: Self, indices: []const usize) *T {
+        pub fn getUnchecked(self: Self, indices: []const usize) *const T {
             var off: usize = 0;
             for (indices, 0..) |idx, i| {
                 off += idx * self._strides[i];
             }
             return &self._data[off];
+        }
+
+        /// getter for shape member of tensor struct
+        pub fn getShape(self: *Self) []const usize{
+            return self._shape;
+        }
+
+        /// getter for stride member of tensor struct
+        pub fn getStride(self: *Self) []const usize{
+            return self._strides;
         }
 
         /// fills the whole tensor with the value taken in input
@@ -105,15 +115,21 @@ pub fn Tensor(comptime T: type) type {
         /// Uses stride-aware iteration so it works correctly with transposed tensors
         pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
             const n = self._shape.len;
+            // if number of rows is less than 1 
+            // then you cannot set the row... hence:
             std.debug.assert(n >= 1);
+            // checking bounds
+
             std.debug.assert(row_num < self._shape[0]);
             const row_size = utils.num_elements(self._shape[1..]);
             std.debug.assert(new_row.len == row_size);
+
             const base = row_num * self._strides[0];
             for (0..row_size) |flat_i| {
-                var off = base;
+                var off       = base;
                 var remaining = flat_i;
-                var d: usize = n;
+                var d: usize  = n;
+
                 while (d > 1) {
                     d -= 1;
                     off += (remaining % self._shape[d]) * self._strides[d];
@@ -129,6 +145,8 @@ pub fn Tensor(comptime T: type) type {
             std.debug.assert(self._shape.len == 2);
             const rows = self._shape[0];
             const cols = self._shape[1];
+            
+            // bound checking
             std.debug.assert(col_num < cols);
             std.debug.assert(new_col.len == rows);
             for (0..rows) |row| {
