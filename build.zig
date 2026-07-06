@@ -135,6 +135,23 @@ pub fn build(b: *std.Build) void {
     // A run step that will run the second test executable.
     const run_exe_tests = b.addRunArtifact(exe_tests);
 
+    // Examples
+    const example1_mod = b.createModule(.{
+        .root_source_file = b.path("examples/simple1.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "zcore", .module = mod },
+        },
+    });
+    const example1_exe = b.addExecutable(.{
+        .name = "simple1",
+        .root_module = example1_mod,
+    });
+    const run_example1 = b.addRunArtifact(example1_exe);
+    const example1_step = b.step("example1", "Run example1");
+    example1_step.dependOn(&run_example1.step);
+
     // Standalone tests
     const test1_mod = b.createModule(.{
         .root_source_file = b.path("tests/test1.zig"),
