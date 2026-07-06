@@ -72,7 +72,7 @@ pub fn Tensor(comptime T: type) type {
         /// and the shape and strides array as well
         pub fn destroy(self: *Self) void{
             if (self._owns_memory) 
-                self._allocator.free(self.data);
+                self._allocator.free(self._data);
             self._allocator.free( self._shape );
             self._allocator.free(self._strides);
         }
@@ -116,8 +116,7 @@ test "computeStrides" {
     const shape = [_]usize{ 2, 3 };
     var strides = [_]usize{ 0, 0 };
 
-    const TensorU32 = Tensor(u32);
-    TensorU32.computeStrides(shape[0..], strides[0..]);
+    computeStrides(shape[0..], strides[0..]);
     try std.testing.expectEqual(@as(usize, 3), strides[0]);
     try std.testing.expectEqual(@as(usize, 1), strides[1]);
 }
