@@ -142,9 +142,43 @@ pub fn Tensor(comptime T: type) type {
 
 
         /// Set the particular row of the tensor to the new one
-        pub fn setRow(self: *Self, row_num: usize, new_row: []const usize); // TODO
-    
+        pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
+            const n = self._shape.len;
+            std.debug.assert(n >= 1);
+            std.debug.assert(row_num < self._shape[0]);
+            const row_size = self._strides[0];
+            std.debug.assert(new_row.len == row_size);
+            const offset_start = row_num * row_size;
+            for (new_row, 0..) |val, i| {
+                self._data[offset_start + i] = val;
+            }
+        }
 
+        /// Set the particular column of the tensor to the new one
+        pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
+            const n = self._shape.len;
+            if (n == 1) {
+                std.debug.assert(col_num < self._shape[0]);
+                std.debug.assert(new_col.len == 1);
+                self._data[col_num] = new_col[0];
+                return;
+            }
+            const outer_dims = self._shape[0 .. n - 1];
+            const outer_count = utils.numElements(outer_dims);
+            std.debug.assert(col_num < self._shape[n - 1]);
+            std.debug.assert(new_col.len == outer_count);
+            const col_stride = self._strides[n - 2];
+            var off = col_num;
+            for (0..outer_count) |i| {
+                self._data[off] = new_col[i];
+                off += col_stride;
+            }
+        }
+
+        // TODO
+        /// set the whole tensor to the one passed as an array 
+        /// the array can either be flattened or not
+        pub fn setWhole(self: *Self, isFlatten: bool, array: []const T) void {}
 
     };
 }
