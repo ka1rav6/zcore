@@ -20,7 +20,7 @@ test computeStrides {
 
 test numElements {
     // checking if numElements are correct
-    std.testing.expectEqual(numElements([_]usize{3, 3}), 9);
+    std.testing.expectEqual(numElements([_]usize{ 3, 3 }), 9);
 }
 
 test "Tensor.zeroes" {
@@ -40,9 +40,8 @@ test "Tensor.set" {
     const shape = [_]usize{ 3, 3 };
     var t = try Tensor(f32).zeroes(allocator, shape[0..]);
     defer t.destroy();
-    t.set([_]usize{2, 2}, 10);
-    std.testing.expectEqual(t.get([_]usize{2, 2}), 10);
-
+    t.set([_]usize{ 2, 2 }, 10);
+    std.testing.expectEqual(t.get([_]usize{ 2, 2 }), 10);
 }
 
 // -------------------------------- Trying different debug prints ------------------------------------
@@ -58,7 +57,7 @@ test "Tensor.debugPrint.0d" {
 test "Tensor.debugPrint.1d" {
     // debugPrint should not crash for a 1-dimensional tensor
     const allocator = std.testing.allocator;
-    const shape = [_]usize{ 4 };
+    const shape = [_]usize{4};
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
     t.set([_]usize{0}, 10);
@@ -74,12 +73,12 @@ test "Tensor.debugPrint.2d" {
     const shape = [_]usize{ 2, 3 };
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
-    t.set([_]usize{0, 0}, 1);
-    t.set([_]usize{0, 1}, 2);
-    t.set([_]usize{0, 2}, 3);
-    t.set([_]usize{1, 0}, 4);
-    t.set([_]usize{1, 1}, 5);
-    t.set([_]usize{1, 2}, 6);
+    t.set([_]usize{ 0, 0 }, 1);
+    t.set([_]usize{ 0, 1 }, 2);
+    t.set([_]usize{ 0, 2 }, 3);
+    t.set([_]usize{ 1, 0 }, 4);
+    t.set([_]usize{ 1, 1 }, 5);
+    t.set([_]usize{ 1, 2 }, 6);
     t.debugPrint();
 }
 
@@ -104,16 +103,8 @@ test "Tensor.debugPrint.3d" {
 // -------------------------- Setting rows/cols/whole tests --------------------------------
 
 // TODO:
-test "Tensor.setRow" {
+test "Tensor.setRow" {}
 
+test "Tensor.setCol" {}
 
-}
-
-test "Tensor.setCol" {
-
-}
-
-test "Tensor.setWhole"{
-
-
-}
+test "Tensor.setWhole" {}

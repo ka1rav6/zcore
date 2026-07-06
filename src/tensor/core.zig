@@ -6,55 +6,55 @@ const utils = @import("utils.zig");
 pub fn Tensor(comptime T: type) type {
     return struct {
         // -------------- members ---------------
-        _allocator   : std.mem.Allocator,
-        _data        : []T              ,
-        _shape       : []usize          ,
-        _strides     : [] usize         ,
-        _owns_memory : bool = true      ,
-        
+        _allocator: std.mem.Allocator,
+        _data: []T,
+        _shape: []usize,
+        _strides: []usize,
+        _owns_memory: bool = true,
+
         const Self = @This(); // so methods can directly use 'Self' instead of @This() everywhere
-        
+
         // --------------------- constructors and destructors --------------------------
 
         /// The constructor for the tensor struct
         /// requires allocator and shape as input
-        pub fn init(allocator : std.mem.Allocator, shape: []const usize) !Self{
+        pub fn init(allocator: std.mem.Allocator, shape: []const usize) !Self {
             // because we dont own the memory the original shape points to:
             const shape_copy = try allocator.dupe(usize, shape); // duplicates
             // allocating the strides on the heap too
-            const strides    = try allocator.alloc(usize, shape.len); 
+            const strides = try allocator.alloc(usize, shape.len);
             utils.computeStrides(shape_copy, strides);
             const data = try allocator.alloc(T, utils.numElements(shape));
 
             return Self{
-                ._data      = data       ,
-                ._allocator = allocator  , 
-                ._shape     = shape_copy ,
-                ._strides   = strides    ,
+                ._data = data,
+                ._allocator = allocator,
+                ._shape = shape_copy,
+                ._strides = strides,
             };
         }
-        
+
         /// Destructor for the tensor struct.
         /// Frees data (if owned by the Tensor)
         /// and the shape and strides array as well
-        pub fn destroy(self: *Self) void{
-            if (self._owns_memory) 
+        pub fn destroy(self: *Self) void {
+            if (self._owns_memory)
                 self._allocator.free(self._data);
-            self._allocator.free( self._shape );
+            self._allocator.free(self._shape);
             self._allocator.free(self._strides);
         }
 
         // ---------------------------- other methods -------------------------------------
 
         /// converts multi-dimensional indices into a single index for the flattened _data array
-        fn offset(self : Self, indices: []const usize) usize {
+        fn offset(self: Self, indices: []const usize) usize {
             // EXPLAINATION :
             // user wants : [1, 2]
             // but we have flattened array stored
             // so it converts it into the index we want
 
             std.debug.assert(indices.len == self._shape.len);
-            var off:usize = 0;
+            var off: usize = 0;
             for (indices, 0..) |idx, i| {
                 off += idx * self._strides[i]; // standard row major calculation
             }
@@ -62,30 +62,30 @@ pub fn Tensor(comptime T: type) type {
         }
         /// returns the value of the index passed by the user
         /// internally calls the offset function to get the index in row-major format
-        pub fn get(self: Self, indices: []const usize) *T{
+        pub fn get(self: Self, indices: []const usize) *T {
             return &self._data[self.offset(indices)];
-        } 
+        }
 
         /// fills the whole tensor with the value taken in input
         /// takes O(n) time where n is the size of the data
-        pub fn fill(self: *Self, value: T) void{
-            for (self._data) |*x|{
+        pub fn fill(self: *Self, value: T) void {
+            for (self._data) |*x| {
                 x.* = value;
             }
         }
 
         /// Initializes the tensor and returns the instance of the tensor
         /// with zeroes filled inside the data by default
-        pub fn zeroes(allocator : std.mem.Allocator, shape: []const usize) !Self {
+        pub fn zeroes(allocator: std.mem.Allocator, shape: []const usize) !Self {
             var temp_t: Self = undefined;
             temp_t = try Self.init(allocator, shape); // calling the constructor
-            @memset(temp_t._data, 0); 
+            @memset(temp_t._data, 0);
             return temp_t;
         }
 
         /// Sets the value of the particular index to the val
         pub fn set(self: *Self, indices: []const usize, val: T) void {
-            const idx       = self.offset(indices);
+            const idx = self.offset(indices);
             self._data[idx] = val;
         }
 
@@ -139,7 +139,6 @@ pub fn Tensor(comptime T: type) type {
             std.debug.print("\n", .{});
         }
 
-
         /// Set the particular row of the tensor to the new one
         pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
             const n = self._shape.len;
@@ -162,11 +161,11 @@ pub fn Tensor(comptime T: type) type {
                 self._data[col_num] = new_col[0];
                 return;
             }
-            const outer_dims  = self._shape[0 .. n - 1];
+            const outer_dims = self._shape[0 .. n - 1];
             const outer_count = utils.numElements(outer_dims);
             std.debug.assert(col_num < self._shape[n - 1]);
             std.debug.assert(new_col.len == outer_count);
-            const col_stride  = self._strides[n - 2];
+            const col_stride = self._strides[n - 2];
             var off = col_num;
             for (0..outer_count) |i| {
                 self._data[off] = new_col[i];
@@ -182,6 +181,5 @@ pub fn Tensor(comptime T: type) type {
                 self._data[i] = val;
             }
         }
-
     };
 }

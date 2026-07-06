@@ -1,5 +1,5 @@
 const Tensor = @import("zcore").Tensor;
-const std    = @import("std");
+const std = @import("std");
 
 test "completeTest1" {
     var myTensor = try Tensor(i8).init(std.heap.page_allocator, &[_]usize{ 3, 3 });

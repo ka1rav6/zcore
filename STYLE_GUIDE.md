@@ -8,6 +8,7 @@
 - Struct members  : _whatever_this_case_is
 - Constants       : SCREAMING_SNAKE_CASE
 
+(**Note:** if similar statements have similar operators, try to align those operators in the same column (like done above with ':')
 ## Comments
 
 Add brutally verbose and clear comments.
@@ -24,4 +25,4 @@ Always return errors instead of formatting
 
 Github actions automatically use `zig fmt`. 
 Still, it is preferable to format it and follow the conventions to maintain consistency
-
+Follow the 3-space indentation

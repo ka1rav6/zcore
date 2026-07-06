@@ -35,9 +35,8 @@ zig build run
 
 - **Zig version:** Match the version of Zig used throughout the project.
 - **No AI-generated code:** Per Zig community norms, do not use AI tools for any purpose — including code, documentation, tests, or debugging.
-- Follow the [Zig Style Guide](https://ziglang.org/documentation/master/#Style-Guide).
+- Follow the [Style Guide](https://github.com/ka1rav6/zcore/blob/main/STYLE_GUIDE.md).
 - Use 4-space indentation.
-- Use PascalCase for struct/enum/union names and `snake_case` for function/variable names. Prefix struct members with an underscore (e.g., `_strides: []usize`).
 - Keep functions focused and small.
 - **Every function must have tests.** If tests are not yet written, open an issue stating that the feature lacks test coverage.
 - **Write thorough, beginner-friendly comments.** The source code should serve as a learning resource for readers of all levels.
