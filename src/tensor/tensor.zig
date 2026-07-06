@@ -1,5 +1,40 @@
 const std = @import("std");
 
+
+// ------------------------------------ SUPPORTING FUNCTIONS --------------------------------------
+
+// NOTE: planning on storing data in tensors in flattened row-major format
+// Hence, strides will be calculated according to shape
+
+/// Computes the strides required to move around the tensor
+fn computeStrides(shape: []const usize, strides: []usize) void{
+    // to see how strides actually work, check the "computeStrides" test
+    if (shape.len == 0) return;
+    var i = shape.len - 1;
+    strides[i] = 1;
+    while (i > 0){
+        i -= 1;
+        strides[i] = strides[i + 1] * shape[i + 1];
+    }
+}
+
+/// returns the total number of elements inside the tensor
+/// basically _data.size();
+fn numElements(shape: []const usize) usize{
+    var total: usize = 1;
+    for (shape) |d|{ // d = dimension
+        total *= d;
+    }
+    return total; 
+}
+
+
+
+
+//------------------------------------ TENSOR STRUCT -------------------------------------------
+
+
+
 /// A basic creator for the Tensor struct
 /// Each Tensor is also given its own allocator
 pub fn Tensor(comptime T: type) type {
@@ -13,22 +48,33 @@ pub fn Tensor(comptime T: type) type {
         
         const Self = @This(); // so methods can directly use 'Self' instead of @This() everywhere
 
-        // NOTE: planning on storing data in tensors in flattened row-major format
-        // Hence, strides will be calculated according to shape
+        /// Actual constructor for the tensor struct
+        /// requires allocator and shape as input
+        pub fn init(allocator : std.mem.Allocator, shape: []const usize) !Self{
+            // because we dont own the memory the original shape points to:
+            const shape_copy = try allocator.dupe(usize, shape); // duplicates
+            // allocating the strides on the heap too
+            const strides    = try allocator.alloc(usize, shape.len); 
+            computeStrides(shape_copy, strides);
+            const data = try allocator.alloc(T, numElements(shape));
 
-        /// Computes the strides required to move around the tensor
-        fn computeStrides(shape: []const usize, strides: []usize) void{
-            // to see how strides actually work, check the "computeStrides" test
-            if (shape.len == 0) return;
-            var i = shape.len - 1;
-            strides[i] = 1;
-            while (i > 0){
-                i -= 1;
-                strides[i] = strides[i + 1] * shape[i + 1];
-            }
+            return Self{
+                ._data = data,
+                ._allocator = allocator, 
+                ._shape = shape_copy,
+                ._strides = strides,
+            };
+
         }
     };
 }
+
+
+
+
+// ------------------------------------------- TESTS -----------------------------------------------
+
+
 
 test "computeStrides" {
     // example :
