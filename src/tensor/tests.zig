@@ -20,7 +20,7 @@ test compute_strides {
 
 test num_elements {
     // checking if num_elements are correct
-    std.testing.expectEqual(num_elements([_]usize{ 3, 3 }), 9);
+    try std.testing.expectEqual(num_elements(&[_]usize{ 3, 3 }), 9);
 }
 
 test "Tensor.zeroes" {
@@ -41,7 +41,7 @@ test "Tensor.set" {
     var t = try Tensor(f32).zeroes(allocator, shape[0..]);
     defer t.destroy();
     t.set([_]usize{ 2, 2 }, 10);
-    std.testing.expectEqual(t.get([_]usize{ 2, 2 }), 10);
+    try std.testing.expectEqual(@as(f32, 10), t.get(&[_]usize{ 2, 2 }).*);
 }
 
 // -------------------------------- Trying different debug prints ------------------------------------
