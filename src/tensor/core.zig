@@ -181,5 +181,9 @@ pub fn Tensor(comptime T: type) type {
                 self._data[i] = val;
             }
         }
+        
+        pub fn resize(self: *Self, new_size: []const usize) void {
+        }
+
     };
 }
