@@ -21,9 +21,9 @@ pub fn Tensor(comptime T: type) type {
         /// The constructor for the tensor struct
         /// requires allocator and shape as input
         pub fn init(allocator: std.mem.Allocator, shape: []const usize) !Self {
-            comptime { 
+            comptime {
                 if (@typeInfo(T) != .int and @typeInfo(T) != .float)
-                    @compileError("Tensor can only contain numerical types\n"); 
+                    @compileError("Tensor can only contain numerical types\n");
             }
             // because we dont own the memory the original shape points to:
             const shape_copy = try allocator.dupe(usize, shape); // duplicates
@@ -79,12 +79,12 @@ pub fn Tensor(comptime T: type) type {
         }
 
         /// getter for shape member of tensor struct
-        pub fn getShape(self: *Self) []const usize{
+        pub fn getShape(self: *Self) []const usize {
             return self._shape;
         }
 
         /// getter for stride member of tensor struct
-        pub fn getStride(self: *Self) []const usize{
+        pub fn getStride(self: *Self) []const usize {
             return self._strides;
         }
 
@@ -115,7 +115,7 @@ pub fn Tensor(comptime T: type) type {
         /// Uses stride-aware iteration so it works correctly with transposed tensors
         pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
             const n = self._shape.len;
-            // if number of rows is less than 1 
+            // if number of rows is less than 1
             // then you cannot set the row... hence:
             std.debug.assert(n >= 1);
             // checking bounds
@@ -126,9 +126,9 @@ pub fn Tensor(comptime T: type) type {
 
             const base = row_num * self._strides[0];
             for (0..row_size) |flat_i| {
-                var off       = base;
+                var off = base;
                 var remaining = flat_i;
-                var d: usize  = n;
+                var d: usize = n;
 
                 while (d > 1) {
                     d -= 1;
@@ -145,7 +145,7 @@ pub fn Tensor(comptime T: type) type {
             std.debug.assert(self._shape.len == 2);
             const rows = self._shape[0];
             const cols = self._shape[1];
-            
+
             // bound checking
             std.debug.assert(col_num < cols);
             std.debug.assert(new_col.len == rows);
