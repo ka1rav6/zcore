@@ -4,9 +4,8 @@ const std = @import("std");
 // ------------------------------------ SUPPORTING FUNCTIONS --------------------------------------
 
 // NOTE: planning on storing data in tensors in flattened row-major format
-// Hence, strides will be calculated according to shape
 
-/// Computes the strides required to move around the tensor
+/// Computes the strides, based on the shape, required to move around the tensor
 fn computeStrides(shape: []const usize, strides: []usize) void{
     // to see how strides actually work, check the "computeStrides" test
     if (shape.len == 0) return;
@@ -59,16 +58,15 @@ pub fn Tensor(comptime T: type) type {
             const data = try allocator.alloc(T, numElements(shape));
 
             return Self{
-                ._data = data,
-                ._allocator = allocator, 
-                ._shape = shape_copy,
-                ._strides = strides,
+                ._data      = data       ,
+                ._allocator = allocator  , 
+                ._shape     = shape_copy ,
+                ._strides   = strides    ,
             };
 
         }
     };
 }
-
 
 
 
