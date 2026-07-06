@@ -27,10 +27,10 @@ pub fn Tensor(comptime T: type) type {
             const data = try allocator.alloc(T, utils.num_elements(shape));
 
             return Self{
-                ._data      = data      ,
-                ._allocator = allocator ,
-                ._shape     = shape_copy,
-                ._strides   = strides   ,
+                ._data = data,
+                ._allocator = allocator,
+                ._shape = shape_copy,
+                ._strides = strides,
             };
         }
 
@@ -89,6 +89,91 @@ pub fn Tensor(comptime T: type) type {
             self._data[idx] = val;
         }
 
+
+        /// Set the particular row of the tensor to the new one
+        pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
+            const n = self._shape.len;
+            std.debug.assert(n >= 1);
+            std.debug.assert(row_num < self._shape[0]);
+            const row_size = self._strides[0];
+            std.debug.assert(new_row.len == row_size);
+            const offset_start = row_num * row_size;
+            for (new_row, 0..) |val, i| {
+                self._data[offset_start + i] = val;
+            }
+        }
+
+        /// Set the particular column of the tensor to the new one
+        pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
+            const n = self._shape.len;
+            if (n == 1) { // just replace the column if there is just one column
+                std.debug.assert(col_num < self._shape[0]);
+                std.debug.assert(new_col.len == 1);
+                self._data[col_num] = new_col[0];
+                return;
+            }
+            const outer_dims = self._shape[0 .. n - 1];
+            const outer_count = utils.num_elements(outer_dims);
+            std.debug.assert(col_num < self._shape[n - 1]);
+            std.debug.assert(new_col.len == outer_count);
+            const col_stride = self._strides[n - 2];
+            var off = col_num;
+            for (0..outer_count) |i| {
+                self._data[off] = new_col[i];
+                off += col_stride;
+            }
+        }
+
+        /// set the whole tensor to the one passed as an array
+        /// the array can either be flattened or not
+        pub fn setWhole(self: *Self, array: []const T) void {
+            std.debug.assert(array.len == self._data.len);
+            for (array, 0..) |val, i| {
+                self._data[i] = val;
+            }
+        }
+        
+        /// Resizes the current tensor
+        /// New memory is allocated and previous memory is freed
+        /// Then the current tensor is mem copied to the new memory as well
+        pub fn resize(self: *Self, new_shape: []const usize) !void {
+            const new_num  = utils.num_elements(new_shape);
+            const old_num  = self._data.len;
+            const copy_len = @min(new_num, old_num);
+
+            const new_data = try self._allocator.alloc(T, new_num);
+            @memcpy(new_data[0..copy_len], self._data[0..copy_len]);
+
+            const shape_copy  = try self._allocator.dupe(usize, new_shape);
+            const new_strides = try self._allocator.alloc(usize, new_shape.len);
+            utils.compute_strides(shape_copy, new_strides);
+            if (self._owns_memory)
+                self._allocator.free(self._data);
+            self._allocator.free(self._shape);
+            self._allocator.free(self._strides);
+            self._data        = new_data;
+            self._shape       = shape_copy;
+            self._strides     = new_strides;
+            self._owns_memory = true;
+        }
+        /// Transposes the tensor
+        /// Doesn't actually copy/ modify the data
+        /// We just play with the strides/shapes so now all the functions
+        /// effectly help access the elements of the transpose instead
+        /// O(1)
+        pub fn transpose(self: *Self) void {
+            std.debug.assert(self._shape.len == 2);
+            const tmp = self._shape[0];
+            self._shape[0] = self._shape[1];
+            self._shape[1] = tmp;
+            const tmp_s = self._strides[0];
+            self._strides[0] = self._strides[1];
+            self._strides[1] = tmp_s;
+        }
+
+
+//------------------------------ DEBUG FUNCTIONS -------------------------------
+
         /// Prints the tensor's metadata and data to stderr in a human-readable format.
         ///
         /// Output includes the element type, shape, strides, and the tensor contents
@@ -138,52 +223,5 @@ pub fn Tensor(comptime T: type) type {
             print_impl(0, 0, self._data, self._shape, self._strides);
             std.debug.print("\n", .{});
         }
-
-        /// Set the particular row of the tensor to the new one
-        pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
-            const n = self._shape.len;
-            std.debug.assert(n >= 1);
-            std.debug.assert(row_num < self._shape[0]);
-            const row_size = self._strides[0];
-            std.debug.assert(new_row.len == row_size);
-            const offset_start = row_num * row_size;
-            for (new_row, 0..) |val, i| {
-                self._data[offset_start + i] = val;
-            }
-        }
-
-        /// Set the particular column of the tensor to the new one
-        pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
-            const n = self._shape.len;
-            if (n == 1) { // just replace the column if there is just one column
-                std.debug.assert(col_num < self._shape[0]);
-                std.debug.assert(new_col.len == 1);
-                self._data[col_num] = new_col[0];
-                return;
-            }
-            const outer_dims = self._shape[0 .. n - 1];
-            const outer_count = utils.num_elements(outer_dims);
-            std.debug.assert(col_num < self._shape[n - 1]);
-            std.debug.assert(new_col.len == outer_count);
-            const col_stride = self._strides[n - 2];
-            var off = col_num;
-            for (0..outer_count) |i| {
-                self._data[off] = new_col[i];
-                off += col_stride;
-            }
-        }
-
-        /// set the whole tensor to the one passed as an array
-        /// the array can either be flattened or not
-        pub fn setWhole(self: *Self, array: []const T) void {
-            std.debug.assert(array.len == self._data.len);
-            for (array, 0..) |val, i| {
-                self._data[i] = val;
-            }
-        }
-        
-        pub fn resize(self: *Self, new_size: []const usize) void {
-        }
-
     };
 }
