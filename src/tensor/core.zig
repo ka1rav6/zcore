@@ -89,7 +89,6 @@ pub fn Tensor(comptime T: type) type {
             self._data[idx] = val;
         }
 
-
         /// Prints the tensor's metadata and data to stderr in a human-readable format.
         ///
         /// Output includes the element type, shape, strides, and the tensor contents
@@ -157,17 +156,17 @@ pub fn Tensor(comptime T: type) type {
         /// Set the particular column of the tensor to the new one
         pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
             const n = self._shape.len;
-            if (n == 1) {
+            if (n == 1) { // just replace the column if there is just one column
                 std.debug.assert(col_num < self._shape[0]);
                 std.debug.assert(new_col.len == 1);
                 self._data[col_num] = new_col[0];
                 return;
             }
-            const outer_dims = self._shape[0 .. n - 1];
+            const outer_dims  = self._shape[0 .. n - 1];
             const outer_count = utils.numElements(outer_dims);
             std.debug.assert(col_num < self._shape[n - 1]);
             std.debug.assert(new_col.len == outer_count);
-            const col_stride = self._strides[n - 2];
+            const col_stride  = self._strides[n - 2];
             var off = col_num;
             for (0..outer_count) |i| {
                 self._data[off] = new_col[i];
@@ -175,10 +174,14 @@ pub fn Tensor(comptime T: type) type {
             }
         }
 
-        // TODO
-        /// set the whole tensor to the one passed as an array 
+        /// set the whole tensor to the one passed as an array
         /// the array can either be flattened or not
-        pub fn setWhole(self: *Self, isFlatten: bool, array: []const T) void {}
+        pub fn setWhole(self: *Self, array: []const T) void {
+            std.debug.assert(array.len == self._data.len);
+            for (array, 0..) |val, i| {
+                self._data[i] = val;
+            }
+        }
 
     };
 }
