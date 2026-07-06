@@ -34,7 +34,7 @@ Study:
 ## Actual Implementation Phase:
 _what each version should have_
 
-### Version 0.1
+### Version 0.0.1
 - Tensor Representation
 - Shape
 - Stride
@@ -44,7 +44,7 @@ _what each version should have_
 - Tensor Constructions : copying, moving, empty(), full(), zeroes() etc
 - Tensor Indexing
 
-### Version 0.5 :
+### Version 0.1 - Tensor backend mostly done:
 - Reshape
 - Transpose
 - Slice
@@ -58,7 +58,7 @@ _what each version should have_
 - Comparison ( + Logical ) 
 - Sum, mean, min, maz, argmax, argmin, variance, standard deviation, product
 
-## Version 1.1
+## Version 0.4
 
 - Matrix Multiplication :
     - first normal O(n<sup>3</sup>)
@@ -78,7 +78,7 @@ _what each version should have_
     - Eigen Decomposition
     - Determinants
     - Norms
-### Version 1.5
+### Version 1.0 :
 
 - Uniform Distribution
 - Normal Distribution
@@ -99,19 +99,12 @@ _what each version should have_
 
 
 
-
-
-
 ## Design Choices to implement
 
-1. NaN -> defining on my own
+1. NaN -> defining all of the NaNs using the builtin functions 
 2. +-0, += inf
-3. DType : implementing myself
+3. Proper comments explaining every single thing so beginners can understand and contribute as well
 
-```zig
-// something like this: 
-const DType = enum { f32, f64, i32, i64, bool };
-```
 
 Follow IEEE as much as possible
 
