@@ -47,7 +47,7 @@ pub fn Tensor(comptime T: type) type {
         
         const Self = @This(); // so methods can directly use 'Self' instead of @This() everywhere
 
-        /// Actual constructor for the tensor struct
+        /// The constructor for the tensor struct
         /// requires allocator and shape as input
         pub fn init(allocator : std.mem.Allocator, shape: []const usize) !Self{
             // because we dont own the memory the original shape points to:
@@ -63,7 +63,16 @@ pub fn Tensor(comptime T: type) type {
                 ._shape     = shape_copy ,
                 ._strides   = strides    ,
             };
-
+        }
+        
+        /// Destructor for the tensor struct.
+        /// Frees data (if owned by the Tensor)
+        /// and the shape and strides array as well
+        pub fn destroy(self: *Self) void{
+            if (self._owns_memory) 
+                self._allocator.free(self.data);
+            self._allocator.free( self._shape );
+            self._allocator.free(self._strides);
         }
     };
 }
