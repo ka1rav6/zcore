@@ -77,10 +77,74 @@ pub fn Tensor(comptime T: type) type {
         /// Initializes the tensor and returns the instance of the tensor
         /// with zeroes filled inside the data by default
         pub fn zeroes(allocator : std.mem.Allocator, shape: []const usize) !Self {
-            var temp_t:Self = undefined;
+            var temp_t: Self = undefined;
             temp_t = try Self.init(allocator, shape); // calling the constructor
             @memset(temp_t._data, 0); 
             return temp_t;
         }
+
+        /// Sets the value of the particular index to the val
+        pub fn set(self: *Self, indices: []const usize, val: T) void {
+            const idx       = self.offset(indices);
+            self._data[idx] = val;
+        }
+
+
+        /// Prints the tensor's metadata and data to stderr in a human-readable format.
+        ///
+        /// Output includes the element type, shape, strides, and the tensor contents
+        /// formatted with nested brackets that reflect the tensor's dimensionality.
+        /// Example output for a 2D tensor of shape [2, 3]:
+        /// Tensor(u32): shape={ 2, 3 }, strides={ 3, 1 }
+        /// [[1, 2, 3],
+        ///  [4, 5, 6]]
+        pub fn debugPrint(self: Self) void {
+            const T_name = @typeName(T);
+            std.debug.print("Tensor({s}): shape={any}, strides={any}\n", .{ T_name, self._shape, self._strides });
+
+            if (self._shape.len == 0) {
+                // 0-dimensional tensor: print the single scalar value
+                std.debug.print("{}\n", .{self._data[0]});
+                return;
+            }
+
+            // Recursive helper to print one dimension of the tensor.
+            // We use a static function inside a nested struct so it can call itself
+            // while still having access to the comptime type `T` from the outer scope.
+            const print_impl = struct {
+                fn printDim(dim: usize, base: usize, data: []const T, shape: []const usize, strides: []const usize) void {
+                    if (dim == shape.len - 1) {
+                        // Innermost dimension: print the actual data values
+                        std.debug.print("[", .{});
+                        for (0..shape[dim]) |i| {
+                            if (i > 0) std.debug.print(", ", .{});
+                            std.debug.print("{}", .{data[base + i]});
+                        }
+                        std.debug.print("]", .{});
+                    } else {
+                        std.debug.print("[", .{});
+                        for (0..shape[dim]) |i| {
+                            if (i > 0) {
+                                // Start a new row and indent to align with the inner content
+                                std.debug.print(",\n", .{});
+                                for (0..dim + 1) |_| std.debug.print(" ", .{});
+                            }
+                            printDim(dim + 1, base + i * strides[dim], data, shape, strides);
+                        }
+                        std.debug.print("]", .{});
+                    }
+                }
+            }.printDim;
+
+            print_impl(0, 0, self._data, self._shape, self._strides);
+            std.debug.print("\n", .{});
+        }
+
+
+        /// Set the particular row of the tensor to the new one
+        pub fn setRow(self: *Self, row_num: usize, new_row: []const usize); // TODO
+    
+
+
     };
 }
