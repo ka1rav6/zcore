@@ -28,7 +28,8 @@ t.get(&[_]usize{ 0, 1 }).* = 42.0;
 ```sh
 git clone https://github.com/ka1rav6/zcore
 cd zcore
-zig build test    # run the tests
+chmod +x ./run_tests.sh
+./run_tests # run the tests
 ```
 
 Requires Zig **0.15.2**.
@@ -43,7 +44,7 @@ Requires Zig **0.15.2**.
 | `init`, `fill`, `zeroes`   |      completed    |
 | Multi-dimensional indexing (`get`) | completed |
 | Memory ownership (views)   | majorly completed |
-| Reshape, transpose, slice  | Soon |
+| Reshape, transpose, slice  | majorly completed |
 | Element-wise arithmetic    | Soon |
 | Broadcasting               | Soon |
 | Matrix multiplication      | Soon |
