@@ -97,6 +97,23 @@ pub fn Tensor(comptime T: type) type {
         /// internally calls the offset function to get the index in row-major format
         pub fn get(self: Self, indices: []const usize) *T{
             return &self._data[self.offset(indices)];
+        } 
+
+        /// fills the whole tensor with the value taken in input
+        /// takes O(n) time where n is the size of the data
+        pub fn fill(self: *Self, value: T) void{
+            for (self._data) |*x|{
+                x.* = value;
+            }
+        }
+
+        /// Initializes the tensor and returns the instance of the tensor
+        /// with zeroes filled inside the data by default
+        pub fn zeroes(allocator : std.mem.Allocator, shape: []const usize) !Self {
+            var temp_t:Self = undefined;
+            temp_t = try Self.init(allocator, shape); // calling the constructor
+            @memset(temp_t._data, 0); 
+            return temp_t;
         }
     };
 }

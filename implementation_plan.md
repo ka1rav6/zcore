@@ -34,17 +34,17 @@ Study:
 ## Actual Implementation Phase:
 _what each version should have_
 
-### Version 0.1 - 0.2
+### Version 0.1
 - Tensor Representation
 - Shape
 - Stride
 - Memory Management (tensor storage etc)
 - Supporting different numerical types (f32, f64, i32, i64, u8, bool, i64...)
-- Define NaN
+- Define NaN?
 - Tensor Constructions : copying, moving, empty(), full(), zeroes() etc
 - Tensor Indexing
 
-### Version 1.0 :
+### Version 0.5 :
 - Reshape
 - Transpose
 - Slice
