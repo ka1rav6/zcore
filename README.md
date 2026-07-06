@@ -30,9 +30,10 @@ git clone https://github.com/ka1rav6/zcore
 cd zcore
 chmod +x ./run_tests.sh
 ./run_tests # run the tests
+zig build example1 # run the first example
 ```
 
-Requires Zig **0.15.2**.
+Requires Zig **0.15.2+**.
 
 ## Current state
 
@@ -47,14 +48,15 @@ Requires Zig **0.15.2**.
 | Reshape, transpose, slice  | majorly completed |
 | Element-wise arithmetic    | Soon |
 | Broadcasting               | Soon |
-| Matrix multiplication      | Soon |
+| Matrix arithmetics         | Soon |
 | Full NumPy-level API       | Soon |
 
 ## How to contribute
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
 2. Pick something (a logical next step) from the [implementation plan](implementation_plan.md) or read the issues for something.
-3. Open a PR.
+3. Read [STYLE_GUIDE.md](STYLE_GUIDE.md).
+4. Open a PR.
 
 Every function must have tests. Every design decision must be explained in comments. Contributions of all sizes are welcome — whether it's a bug fix, a new feature, or just better documentation.
 

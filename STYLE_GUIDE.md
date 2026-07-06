@@ -7,6 +7,7 @@
 - Types           : PascalCase
 - Struct members  : _whatever_this_case_is
 - Constants       : SCREAMING_SNAKE_CASE
+- File names      : snake_case
 
 ## Comments
 
