@@ -100,3 +100,20 @@ test "Tensor.debugPrint.3d" {
     }
     t.debugPrint();
 }
+
+// -------------------------- Setting rows/cols/whole tests --------------------------------
+
+// TODO:
+test "Tensor.setRow" {
+
+
+}
+
+test "Tensor.setCol" {
+
+}
+
+test "Tensor.setWhole"{
+
+
+}
