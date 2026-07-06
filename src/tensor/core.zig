@@ -35,10 +35,10 @@ pub fn Tensor(comptime T: type) type {
             const data = try allocator.alloc(T, utils.num_elements(shape));
 
             return Self{
-                ._data = data,
+                ._data      = data,
                 ._allocator = allocator,
-                ._shape = shape_copy,
-                ._strides = strides,
+                ._shape     = shape_copy,
+                ._strides   = strides,
             };
         }
 
@@ -199,15 +199,41 @@ pub fn Tensor(comptime T: type) type {
         pub fn transpose(self: *Self) void {
             std.debug.assert(self._shape.len == 2);
             const tmp = self._shape[0];
+
             self._shape[0] = self._shape[1];
             self._shape[1] = tmp;
             const tmp_s = self._strides[0];
             self._strides[0] = self._strides[1];
             self._strides[1] = tmp_s;
         }
+        
+        /// returns the required slice of the tensor without actually copying it
+        ///
+        pub fn slice(self: Self, start_row: usize, end_row: usize) !Self {
+            const n = self._shape.len;
+            // bounds checking 
+            if (n < 1)
+                return error.IndexOutOfBounds;
+            if (end_row > self._shape[0]) 
+                return error.IndexOutOfBounds;
+            if (start_row >= end_row)
+                return error.IndexOutOfBounds;
+
+            const new_shape = try self._allocator.dupe(usize, self._shape);
+            new_shape[0]    = end_row - start_row;
+
+            const new_strides = try self._allocator.dupe(usize, self._strides);
+            return Self{
+                ._data = self._data[start_row * self._strides[0] .. self._data.len],
+                ._allocator   = self._allocator,
+                ._shape       = new_shape,
+                ._strides     = new_strides,
+                ._owns_memory = false,
+            };
+        }
+
 
         //------------------------------ DEBUG FUNCTIONS -------------------------------
-
         /// Prints the tensor's metadata and data to stderr in a human-readable format.
         ///
         /// Output includes the element type, shape, strides, and the tensor contents
