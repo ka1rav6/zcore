@@ -60,6 +60,11 @@ Requires Zig **0.15.2+**.
 
 Every function must have tests. Every design decision must be explained in comments. Contributions of all sizes are welcome — whether it's a bug fix, a new feature, or just better documentation.
 
+## How to run
+1. Tests    : ```bash ./run_tests.sh```
+2. Examples : ```bash zig build example1 #or other examples accordingly```
+
+
 ## License
 
 MIT
