@@ -102,9 +102,170 @@ test "Tensor.debug_print.3d" {
 
 // -------------------------- Setting rows/cols/whole tests --------------------------------
 
-// TODO:
-test "Tensor.setRow" {}
+test "Tensor.setRow" {
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 3, 3 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
 
-test "Tensor.setCol" {}
+    const new_row = [_]u32{ 10, 20, 30 };
+    t.setRow(1, &new_row); // set row one as the new row
 
-test "Tensor.setWhole" {}
+    // row 1 should be updated
+    try std.testing.expectEqual(@as(u32, 10), (try t.get(&[_]usize{ 1, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 20), (try t.get(&[_]usize{ 1, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 30), (try t.get(&[_]usize{ 1, 2 })).*);
+    // row 0 should still be zero
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 0, 0 })).*);
+    // row 2 should still be zero
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 2, 0 })).*);
+}
+
+test "Tensor.setCol" { // only works for 2d tensors of course
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 3, 3 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
+
+    const new_col = [_]u32{ 10, 20, 30 };
+    t.setCol(1, &new_col);
+
+    // col 1 should be updated
+    try std.testing.expectEqual(@as(u32, 10), (try t.get(&[_]usize{ 0, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 20), (try t.get(&[_]usize{ 1, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 30), (try t.get(&[_]usize{ 2, 1 })).*);
+    // col 0 should still be zero
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 0, 0 })).*);
+    // col 2 should still be zero
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 0, 2 })).*);
+}
+
+test "Tensor.setWhole" {
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 2, 3 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
+
+    const values = [_]u32{ 1, 2, 3, 4, 5, 6 };
+    t.setWhole(&values);
+
+    // checking each value separately
+    try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 2), (try t.get(&[_]usize{ 0, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 3), (try t.get(&[_]usize{ 0, 2 })).*);
+    try std.testing.expectEqual(@as(u32, 4), (try t.get(&[_]usize{ 1, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 5), (try t.get(&[_]usize{ 1, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 6), (try t.get(&[_]usize{ 1, 2 })).*);
+}
+
+test "Tensor.slice" {
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 3, 4 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
+
+    // fill with sequential values
+    var val: u32 = 0;
+    for (0..3) |i| {
+        for (0..4) |j| {
+            try t.set([_]usize{ i, j }, val);
+            val += 1;
+        }
+    }
+
+    var slice = try t.slice(1, 3);
+    defer slice.destroy();
+
+    // shape should be (2, 4)
+    try std.testing.expectEqual(@as(usize, 2), slice._shape[0]);
+    try std.testing.expectEqual(@as(usize, 4), slice._shape[1]);
+    // slice should not own memory
+    try std.testing.expectEqual(false, slice._owns_memory);
+    // check values in slice
+    try std.testing.expectEqual(@as(u32, 4), (try slice.get(&[_]usize{ 0, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 5), (try slice.get(&[_]usize{ 0, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 8), (try slice.get(&[_]usize{ 1, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 11), (try slice.get(&[_]usize{ 1, 3 })).*);
+}
+
+test "Tensor.transpose" {
+    // Meaning of transpose:
+    // if A is a tensor, for example :
+    // A = [[1,2,3]
+    //      [4,5,6]
+    //      [7,8,9]]
+    // Then, the transpose of A is:
+    //  [[1,4,7]
+    //   [2,5,8]
+    //   [3,6,9]]
+
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 2, 3 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
+
+    // fill with sequential values
+    var val: u32 = 1;
+    for (0..2) |i| {
+        for (0..3) |j| {
+            try t.set([_]usize{ i, j }, val);
+            val += 1;
+        }
+    }
+
+    t.transpose();
+    // shape should be (3, 2)
+    try std.testing.expectEqual(@as(usize, 3), t._shape[0]);
+    try std.testing.expectEqual(@as(usize, 2), t._shape[1]);
+    // check transposed values
+    try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 4), (try t.get(&[_]usize{ 0, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 2), (try t.get(&[_]usize{ 1, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 5), (try t.get(&[_]usize{ 1, 1 })).*);
+    try std.testing.expectEqual(@as(u32, 3), (try t.get(&[_]usize{ 2, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 6), (try t.get(&[_]usize{ 2, 1 })).*);
+}
+
+test "Tensor.resize" {
+    // Resizing includes preserving the data in the old places
+    // and making the data of the new places (if any) be 0
+    // Example: 2 * 3 -> 3 * 3
+    //
+    // [[1,2,3]      ->   [[1,2,3]
+    //  [4,5,6]]     ->    [4,5,6]
+    //                     [0,0,0]]
+
+    const allocator = std.testing.allocator;
+    const shape = [_]usize{ 2, 3 };
+    var t = try Tensor(u32).zeroes(allocator, shape[0..]);
+    defer t.destroy();
+    // fill with sequential values
+    var val: u32 = 1;
+    for (0..2) |i| {
+        for (0..3) |j| {
+            try t.set([_]usize{ i, j }, val);
+            val += 1;
+        }
+    }
+    // resize to larger (2x3 -> 3x3)
+    const larger = [_]usize{ 3, 3 };
+    try t.resize(&larger);
+    try std.testing.expectEqual(@as(usize, 3), t._shape[0]);
+    try std.testing.expectEqual(@as(usize, 3), t._shape[1]);
+
+    // old values preserved
+    try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 6), (try t.get(&[_]usize{ 1, 2 })).*);
+    // new elements zeroed
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 2, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 2, 2 })).*);
+
+    // resize to smaller (3x3 -> 1x2)
+    const smaller = [_]usize{ 1, 2 };
+    try t.resize(&smaller);
+    try std.testing.expectEqual(@as(usize, 1), t._shape[0]);
+    try std.testing.expectEqual(@as(usize, 2), t._shape[1]);
+    // values preserved
+    try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
+    try std.testing.expectEqual(@as(u32, 2), (try t.get(&[_]usize{ 0, 1 })).*);
+}
