@@ -42,7 +42,7 @@
 - [ ] NaN handling policy -> document which NaN we use, how comparisons behave
 - [x] `fill(value)` -> set every element
 - [x] `zeroes(allocator, shape)` -> convenience for zero-initialized
-- [ ] `ones(allocator, shape)` -> convenience for one-initialized
+- [x] `ones(allocator, shape)` -> convenience for one-initialized
 - [ ] `empty(allocator, shape)` -> allocate without initializing (unsafe; for perf)
 - [ ] `full(allocator, shape, value)` -> allocate & fill
 - [ ] `fromSlice(allocator, shape, data)` -> adopt existing data
@@ -57,9 +57,9 @@
 - [x] Stride correctness for 1d, 2d, 3d
 - [x] Element count
 - [x] `zeroes` fills with 0
-- [x] `set` / `get` round-trip
+- [x] `set` / `get` / `at` round-trip
 - [ ] `fromSlice` correctness
-- [ ] Type rejection at comptime for non-numeric types
+- [x] Type rejection at comptime for non-numeric types
 - [ ] Edge cases: 0-d tensor (scalar), 0-size dimension
 
 ### Infrastructure

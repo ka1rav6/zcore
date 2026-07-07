@@ -5,6 +5,13 @@ const utils = @import("utils.zig");
 /// Each Tensor is also given its own allocator
 pub fn Tensor(comptime T: type) type {
     return struct {
+        comptime {
+            switch (@typeInfo(T)) {
+                .int, .float, .bool => {},
+                else => @compileError("Tensor can only contain numerical types (int, float, bool)\n"),
+            }
+        }
+
         // -------------- members ---------------
         _allocator: std.mem.Allocator,
         _data: []T,
@@ -21,10 +28,6 @@ pub fn Tensor(comptime T: type) type {
         /// The constructor for the tensor struct
         /// requires allocator and shape as input
         pub fn init(allocator: std.mem.Allocator, shape: []const usize) !Self {
-            comptime {
-                if (@typeInfo(T) != .int and @typeInfo(T) != .float)
-                    @compileError("Tensor can only contain numerical types\n");
-            }
             // because we dont own the memory the original shape points to:
             const shape_copy = try allocator.dupe(usize, shape); // duplicates
             errdefer allocator.free(shape_copy);
@@ -69,6 +72,12 @@ pub fn Tensor(comptime T: type) type {
             return &self._data[try self.offset(indices)];
         }
 
+        /// Similar to the get() method. Instead of a pointer,
+        /// it returns the actual value
+        pub fn at(self: Self, indices: []const usize) Error!T {
+            return &self._data[try self.offset(indices)];
+        }
+
         /// returns the value at the given indices (no bounds checking)
         pub fn getUnchecked(self: Self, indices: []const usize) *const T {
             var off: usize = 0;
@@ -97,11 +106,19 @@ pub fn Tensor(comptime T: type) type {
         }
 
         /// Initializes the tensor and returns the instance of the tensor
-        /// with zeroes filled inside the data by default
+        /// with zeroes filled inside the data by default (null tensor)
         pub fn zeroes(allocator: std.mem.Allocator, shape: []const usize) !Self {
             var temp_t: Self = undefined;
             temp_t = try Self.init(allocator, shape); // calling the constructor
             @memset(temp_t._data, 0);
+            return temp_t;
+        }
+        /// Initializes the tensor and returns the instance of the tensor
+        /// with ones filled inside the data by default (identity tensor)
+        pub fn ones(allocator: std.mem.Allocator, shape: []const usize) !Self {
+            var temp_t: Self = undefined;
+            temp_t = try Self.init(allocator, shape); // calling the constructor
+            @memset(temp_t._data, 1);
             return temp_t;
         }
 

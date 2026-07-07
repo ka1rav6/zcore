@@ -269,3 +269,15 @@ test "Tensor.resize" {
     try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
     try std.testing.expectEqual(@as(u32, 2), (try t.get(&[_]usize{ 0, 1 })).*);
 }
+
+test "Type rejection at comptime for non-numeric types" {
+    // All supported numerical types must compile without error
+    _ = Tensor(u8);
+    _ = Tensor(u32);
+    _ = Tensor(u64);
+    _ = Tensor(i32);
+    _ = Tensor(i64);
+    _ = Tensor(f32);
+    _ = Tensor(f64);
+    _ = Tensor(bool);
+}
