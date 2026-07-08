@@ -27,9 +27,9 @@ jobs:
       - name: Run test script
         run: bash ./run_tests.sh
 
-        # Build project : temporarily not building
-#      - name: Build
-#       run: zig build
+      # Build project :
+      - name: Build
+       run: zig build
 
       # Success message
       - name: Done
