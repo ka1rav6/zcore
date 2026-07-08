@@ -2,12 +2,13 @@
 
 ## Naming 
 
-- Functions       : snake_case
-- Function params : snake_case
-- Types           : PascalCase
-- Struct members  : _whatever_this_case_is
-- Constants       : SCREAMING_SNAKE_CASE
-- File names      : snake_case
+- Functions          : snake_case
+- Function params    : snake_case
+- Types              : PascalCase
+- Struct members     : _whatever_this_case_is
+- Constants          : SCREAMING_SNAKE_CASE
+- File names         : snake_case
+- Errors/Error names : PascalCase
 
 ## Comments
 

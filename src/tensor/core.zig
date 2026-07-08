@@ -79,7 +79,7 @@ pub fn Tensor(comptime T: type) type {
         }
 
         /// returns the value at the given indices (no bounds checking)
-        pub fn getUnchecked(self: Self, indices: []const usize) *const T {
+        pub fn get_unchecked(self: Self, indices: []const usize) *const T {
             var off: usize = 0;
             for (indices, 0..) |idx, i| {
                 off += idx * self._strides[i];
@@ -88,12 +88,12 @@ pub fn Tensor(comptime T: type) type {
         }
 
         /// getter for shape member of tensor struct
-        pub fn getShape(self: *Self) []const usize {
+        pub fn get_shape(self: *Self) []const usize {
             return self._shape;
         }
 
         /// getter for stride member of tensor struct
-        pub fn getStride(self: *Self) []const usize {
+        pub fn get_stride(self: *Self) []const usize {
             return self._strides;
         }
 
@@ -130,7 +130,7 @@ pub fn Tensor(comptime T: type) type {
 
         /// Set the particular row of the tensor to the new one
         /// Uses stride-aware iteration so it works correctly with transposed tensors
-        pub fn setRow(self: *Self, row_num: usize, new_row: []const T) void {
+        pub fn set_row(self: *Self, row_num: usize, new_row: []const T) void {
             const n = self._shape.len;
             // if number of rows is less than 1
             // then you cannot set the row... hence:
@@ -158,7 +158,7 @@ pub fn Tensor(comptime T: type) type {
 
         /// Set the particular column of the tensor to the new one
         /// Only works for 2D tensors
-        pub fn setCol(self: *Self, col_num: usize, new_col: []const T) void {
+        pub fn set_col(self: *Self, col_num: usize, new_col: []const T) void {
             std.debug.assert(self._shape.len == 2);
             const rows = self._shape[0];
             const cols = self._shape[1];
@@ -174,7 +174,7 @@ pub fn Tensor(comptime T: type) type {
 
         /// set the whole tensor to the one passed as an array
         /// the array can either be flattened or not
-        pub fn setWhole(self: *Self, array: []const T) void {
+        pub fn set_whole(self: *Self, array: []const T) void {
             std.debug.assert(array.len == self._data.len);
             for (array, 0..) |val, i| {
                 self._data[i] = val;
@@ -224,8 +224,46 @@ pub fn Tensor(comptime T: type) type {
             self._strides[1] = tmp_s;
         }
 
+        /// Returns a broadcast view of this tensor to the given target shape.
+        /// No data is copied. Uses stride=0 for broadcast dimensions.
+        /// Caller owns the returned tensor.
+        pub fn broadcast_to(self: Self, target_shape: []const usize) !Self {
+            const old_shape = self._shape;
+            const old_strides = self._strides;
+            const ndim = target_shape.len;
+            if (ndim < old_shape.len)
+                return error.InvalidArgument;
+
+            var new_strides = try self._allocator.alloc(usize, ndim);
+            errdefer self._allocator.free(new_strides);
+            const pad = ndim - old_shape.len;
+
+            var i: usize = ndim;
+            while (i > 0) {
+                i -= 1;
+                if (i >= pad) {
+                    const old_i = i - pad;
+                    if (old_shape[old_i] != target_shape[i] and old_shape[old_i] != 1)
+                        return error.InvalidArgument;
+                    new_strides[i] = if (old_shape[old_i] == 1) 0 else old_strides[old_i];
+                } else {
+                    new_strides[i] = 0;
+                }
+            }
+
+            const shape_copy = try self._allocator.dupe(usize, target_shape);
+            errdefer self._allocator.free(shape_copy);
+
+            return Self{
+                ._data = self._data,
+                ._allocator = self._allocator,
+                ._shape = shape_copy,
+                ._strides = new_strides,
+                ._owns_memory = false,
+            };
+        }
+
         /// returns the required slice of the tensor without actually copying it
-        ///
         pub fn slice(self: Self, start_row: usize, end_row: usize) !Self {
             const n = self._shape.len;
             // bounds checking
@@ -250,6 +288,7 @@ pub fn Tensor(comptime T: type) type {
         }
 
         //------------------------------ DEBUG FUNCTIONS -------------------------------
+
         /// Prints the tensor's metadata and data to stderr in a human-readable format.
         ///
         /// Output includes the element type, shape, strides, and the tensor contents

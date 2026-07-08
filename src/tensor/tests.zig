@@ -102,14 +102,14 @@ test "Tensor.debug_print.3d" {
 
 // -------------------------- Setting rows/cols/whole tests --------------------------------
 
-test "Tensor.setRow" {
+test "Tensor.set_row" {
     const allocator = std.testing.allocator;
     const shape = [_]usize{ 3, 3 };
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
 
     const new_row = [_]u32{ 10, 20, 30 };
-    t.setRow(1, &new_row); // set row one as the new row
+    t.set_row(1, &new_row); // set row one as the new row
 
     // row 1 should be updated
     try std.testing.expectEqual(@as(u32, 10), (try t.get(&[_]usize{ 1, 0 })).*);
@@ -121,14 +121,14 @@ test "Tensor.setRow" {
     try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 2, 0 })).*);
 }
 
-test "Tensor.setCol" { // only works for 2d tensors of course
+test "Tensor.set_col" { // only works for 2d tensors of course
     const allocator = std.testing.allocator;
     const shape = [_]usize{ 3, 3 };
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
 
     const new_col = [_]u32{ 10, 20, 30 };
-    t.setCol(1, &new_col);
+    t.set_col(1, &new_col);
 
     // col 1 should be updated
     try std.testing.expectEqual(@as(u32, 10), (try t.get(&[_]usize{ 0, 1 })).*);
@@ -140,14 +140,14 @@ test "Tensor.setCol" { // only works for 2d tensors of course
     try std.testing.expectEqual(@as(u32, 0), (try t.get(&[_]usize{ 0, 2 })).*);
 }
 
-test "Tensor.setWhole" {
+test "Tensor.set_whole" {
     const allocator = std.testing.allocator;
     const shape = [_]usize{ 2, 3 };
     var t = try Tensor(u32).zeroes(allocator, shape[0..]);
     defer t.destroy();
 
     const values = [_]u32{ 1, 2, 3, 4, 5, 6 };
-    t.setWhole(&values);
+    t.set_whole(&values);
 
     // checking each value separately
     try std.testing.expectEqual(@as(u32, 1), (try t.get(&[_]usize{ 0, 0 })).*);
