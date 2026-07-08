@@ -42,13 +42,13 @@
 - [x] `fill(value)` -> set every element
 - [x] `zeroes(allocator, shape)` -> convenience for zero-initialized
 - [x] `ones(allocator, shape)` -> convenience for one-initialized
-- [ ] `empty(allocator, shape)` -> allocate without initializing (unsafe; for perf)
-- [ ] `full(allocator, shape, value)` -> allocate & fill
-- [ ] `fromSlice(allocator, shape, data)` -> adopt existing data
+- [x] `empty(allocator, shape)` -> allocate without initializing (unsafe; for perf)
+- [x] `full(allocator, shape, value)` -> allocate & fill
+- [x] `from_slice(allocator, shape, data)` -> adopt existing data
 - [x] `get(indices)` -> bounds-checked element access
-- [x] `getUnchecked(indices)` -> no bounds checking
+- [x] `get_unchecked(indices)` -> no bounds checking
 - [x] `set(indices, value)` -> bounds-checked write
-- [x] `setRow`, `setCol`, `setWhole`
+- [x] `set_row`, `set_col`, `set_whole`
 - [x] `debug_print()` -> recursive, multi-dim formatting
 
 ### Testing (v0.0.x)

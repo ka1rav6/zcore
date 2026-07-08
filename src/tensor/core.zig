@@ -45,6 +45,29 @@ pub fn Tensor(comptime T: type) type {
             };
         }
 
+        /// Creates a tensor that adopts an existing data slice.
+        /// The allocator must be the same one that allocated data.
+        /// The tensor takes ownership of data and will free it on destroy
+        pub fn from_slice(allocator: std.mem.Allocator, shape: []const usize, data: []T) !Self {
+            const num_elements = utils.num_elements(shape);
+            if (data.len != num_elements)
+                return error.InvalidArgument;
+
+            const shape_copy = try allocator.dupe(usize, shape);
+            errdefer allocator.free(shape_copy);
+            const strides = try allocator.alloc(usize, shape.len);
+            errdefer allocator.free(strides);
+            utils.compute_strides(shape_copy, strides);
+
+            return Self{
+                ._data = data,
+                ._allocator = allocator,
+                ._shape = shape_copy,
+                ._strides = strides,
+                ._owns_memory = true,
+            };
+        }
+
         /// Destructor for the tensor struct.
         /// Frees data (if owned by the Tensor)
         /// and the shape and strides array as well
@@ -265,7 +288,6 @@ pub fn Tensor(comptime T: type) type {
                     new_strides[i] = 0;
                 }
             }
-
             const shape_copy = try self._allocator.dupe(usize, target_shape);
             errdefer self._allocator.free(shape_copy);
 
