@@ -39,7 +39,6 @@
 - [x] `destroy()` -> frees owned memory
 - [x] Supported types: `f32`, `f64`, `i32`, `i64`, `u8`, `u32`, `u64`, `bool`
 - [x] Comptime gate to reject non-numeric types (with `@typeInfo`)
-- [ ] NaN handling policy -> document which NaN we use, how comparisons behave
 - [x] `fill(value)` -> set every element
 - [x] `zeroes(allocator, shape)` -> convenience for zero-initialized
 - [x] `ones(allocator, shape)` -> convenience for one-initialized
