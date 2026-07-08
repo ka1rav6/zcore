@@ -122,6 +122,21 @@ pub fn Tensor(comptime T: type) type {
             return temp_t;
         }
 
+        /// Allocates a tensor without initializing its data (unsafe, for performance)
+        pub fn empty(allocator: std.mem.Allocator, shape: []const usize) !Self {
+            var temp_t: Self = undefined;
+            temp_t = try Self.init(allocator, shape);
+            return temp_t;
+        }
+
+        /// Initializes the tensor and fills it with the given value
+        pub fn full(allocator: std.mem.Allocator, shape: []const usize, value: T) !Self {
+            var temp_t: Self = undefined;
+            temp_t = try Self.init(allocator, shape);
+            @memset(temp_t._data, value);
+            return temp_t;
+        }
+
         /// Sets the value at the given indices (bounds-checked)
         pub fn set(self: *Self, indices: []const usize, val: T) Error!void {
             const idx = try self.offset(indices);
