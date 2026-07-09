@@ -98,7 +98,7 @@ pub fn Tensor(comptime T: type) type {
         /// Similar to the get() method. Instead of a pointer,
         /// it returns the actual value
         pub fn at(self: Self, indices: []const usize) Error!T {
-            return &self._data[try self.offset(indices)];
+            return self._data[try self.offset(indices)];
         }
 
         /// returns the value at the given indices (no bounds checking)
