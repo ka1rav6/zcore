@@ -270,6 +270,207 @@ test "Tensor.resize" {
     try std.testing.expectEqual(@as(u32, 2), (try t.get(&[_]usize{ 0, 1 })).*);
 }
 
+// -------------------------------- 0-length (zero-dimension) tensor tests ----------------------------
+
+// NOTE TO beginners: the {} define a scope. in the following tests we
+// are testing multiple things within a single test by using different
+// scopes
+
+test "compute_strides with 0-length shape" {
+    // For shape [0], the single stride should be 1 (no data to access, but mathematically correct)
+    {
+        const shape = [_]usize{0};
+        var strides = [_]usize{0};
+        compute_strides(shape[0..], strides[0..]);
+        try std.testing.expectEqual(@as(usize, 1), strides[0]);
+    }
+    // For shape [3, 0]: strides[1]=1, strides[0]=strides[1]*shape[1]=1*0=0
+    {
+        const shape = [_]usize{ 3, 0 };
+        var strides = [_]usize{ 0, 0 };
+        compute_strides(shape[0..], strides[0..]);
+        try std.testing.expectEqual(@as(usize, 0), strides[0]);
+        try std.testing.expectEqual(@as(usize, 1), strides[1]);
+    }
+    // For shape [0, 3]: strides[1]=1, strides[0]=strides[1]*shape[1]=1*3=3
+    {
+        const shape = [_]usize{ 0, 3 };
+        var strides = [_]usize{ 0, 0 };
+        compute_strides(shape[0..], strides[0..]);
+        try std.testing.expectEqual(@as(usize, 3), strides[0]);
+        try std.testing.expectEqual(@as(usize, 1), strides[1]);
+    }
+}
+
+test "num_elements with 0-length shape" {
+    try std.testing.expectEqual(@as(usize, 0), num_elements(&[_]usize{0}));
+    try std.testing.expectEqual(@as(usize, 0), num_elements(&[_]usize{ 3, 0 }));
+    try std.testing.expectEqual(@as(usize, 0), num_elements(&[_]usize{ 0, 3 }));
+    try std.testing.expectEqual(@as(usize, 0), num_elements(&[_]usize{ 0, 0 }));
+}
+
+test "Tensor.init with 0-length shape" {
+    const allocator = std.testing.allocator;
+    // 1D zero-length [0]
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{0});
+        defer t.destroy();
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+        try std.testing.expectEqual(@as(usize, 1), t._shape.len);
+        try std.testing.expectEqual(@as(usize, 0), t._shape[0]);
+    }
+    // 2D zero-length [3, 0]
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 3, 0 });
+        defer t.destroy();
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+        try std.testing.expectEqual(@as(usize, 2), t._shape.len);
+        try std.testing.expectEqual(@as(usize, 3), t._shape[0]);
+        try std.testing.expectEqual(@as(usize, 0), t._shape[1]);
+    }
+    // 2D zero-length [0, 3]
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 0, 3 });
+        defer t.destroy();
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+        try std.testing.expectEqual(@as(usize, 2), t._shape.len);
+        try std.testing.expectEqual(@as(usize, 0), t._shape[0]);
+        try std.testing.expectEqual(@as(usize, 3), t._shape[1]);
+    }
+    // 2D zero-length [0, 0]
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 0, 0 });
+        defer t.destroy();
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+    }
+}
+
+// testing different constructors with 0-length shapes
+
+test "Tensor.zeroes with 0-length shape" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).zeroes(allocator, &[_]usize{ 3, 0 });
+    defer t.destroy();
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.ones with 0-length shape" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).ones(allocator, &[_]usize{ 0, 3 });
+    defer t.destroy();
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.empty with 0-length shape" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).empty(allocator, &[_]usize{0});
+    defer t.destroy();
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.full with 0-length shape" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).full(allocator, &[_]usize{ 3, 0 }, 42);
+    defer t.destroy();
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.fill on 0-length tensor" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).init(allocator, &[_]usize{ 3, 0 });
+    defer t.destroy();
+    t.fill(42);
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.set_whole on 0-length tensor" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).init(allocator, &[_]usize{ 2, 0 });
+    defer t.destroy();
+    t.set_whole(&[_]u32{});
+    try std.testing.expectEqual(@as(usize, 0), t._data.len);
+}
+
+test "Tensor.get/set on 0-length tensor should error" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).init(allocator, &[_]usize{ 3, 0 });
+    defer t.destroy();
+    // Any index into a 0-length dimension should error
+    try std.testing.expectError(error.IndexOutOfBounds, t.get(&[_]usize{ 0, 0 }));
+    try std.testing.expectError(error.IndexOutOfBounds, t.get(&[_]usize{ 0, 0 }));
+    try std.testing.expectError(error.IndexOutOfBounds, t.set(&[_]usize{ 0, 0 }, 42));
+    // Even indices that would be valid in the non-zero dimension should error
+    try std.testing.expectError(error.IndexOutOfBounds, t.get(&[_]usize{ 2, 0 }));
+}
+
+test "Tensor.resize from zero to non-zero and back" {
+    const allocator = std.testing.allocator;
+    // Start with 0-length tensor
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{0});
+        defer t.destroy();
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+
+        // Resize to non-zero
+        try t.resize(&[_]usize{ 2, 3 });
+        try std.testing.expectEqual(@as(usize, 6), t._data.len);
+        try std.testing.expectEqual(@as(usize, 2), t._shape.len);
+        try std.testing.expectEqual(@as(usize, 2), t._shape[0]);
+        try std.testing.expectEqual(@as(usize, 3), t._shape[1]);
+        // New elements should be zeroed
+        for (t._data) |elem| {
+            try std.testing.expectEqual(@as(u32, 0), elem);
+        }
+    }
+    // Start with non-zero tensor, resize to 0-length
+    {
+        var t = try Tensor(u32).zeroes(allocator, &[_]usize{ 2, 3 });
+        defer t.destroy();
+        try t.resize(&[_]usize{0});
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+        try std.testing.expectEqual(@as(usize, 1), t._shape.len);
+        try std.testing.expectEqual(@as(usize, 0), t._shape[0]);
+    }
+    // Resize from one zero-length shape to another
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 3, 0 });
+        defer t.destroy();
+        try t.resize(&[_]usize{ 0, 5 });
+        try std.testing.expectEqual(@as(usize, 0), t._data.len);
+        try std.testing.expectEqual(@as(usize, 5), t._shape[1]);
+    }
+}
+
+test "Tensor.debug_print on 0-length tensor" {
+    const allocator = std.testing.allocator;
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{0});
+        defer t.destroy();
+        t.debug_print();
+    }
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 3, 0 });
+        defer t.destroy();
+        t.debug_print();
+    }
+    {
+        var t = try Tensor(u32).init(allocator, &[_]usize{ 0, 3 });
+        defer t.destroy();
+        t.debug_print();
+    }
+}
+
+test "Tensor.transpose on 0-length 2D tensor" {
+    const allocator = std.testing.allocator;
+    var t = try Tensor(u32).init(allocator, &[_]usize{ 0, 3 });
+    defer t.destroy();
+    t.transpose();
+    try std.testing.expectEqual(@as(usize, 3), t._shape[0]);
+    try std.testing.expectEqual(@as(usize, 0), t._shape[1]);
+}
+
+// ---------------------------------Type Rejection --------------------------
+
 test "Type rejection at comptime for non-numeric types" {
     // All supported numerical types must compile without error
     _ = Tensor(u8);

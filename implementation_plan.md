@@ -57,12 +57,11 @@
 - [x] Element count
 - [x] `zeroes` fills with 0
 - [x] `set` / `get` / `at` round-trip
-- [ ] `fromSlice` correctness
+- [x] `fromSlice` correctness
 - [x] Type rejection at comptime for non-numeric types
-- [ ] Edge cases: 0-d tensor (scalar), 0-size dimension
+- [x] Edge cases: 0-d tensor (scalar), 0-size dimension
 
 ### Infrastructure
-
 - [x] Build system (`build.zig`, `build.zig.zon`)
 - [x] Module exposed as `zcore`
 - [x] `zig build test` runs unit tests
