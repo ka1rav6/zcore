@@ -2,7 +2,7 @@
 
 **A tensor library written in Zig, for Zig.**
 
-zcore aims to be Zig's answer to NumPy/PyTorch - a fast, well-documented tensor library that's as educational as it is practical. Every line is written with beginners in mind. It is first in the line of libraries for zig: a dataframe (pandas equivalent) and a plotting library. Zig is great for such a library and it could be the future of ML engines/ AI engines if such libraries exist
+zcore aims to be Zig's answer to NumPy/PyTorch — a fast, well-documented tensor library that's as educational as it is practical. Every line is written with beginners in mind. It is the first in a planned line of data-science libraries for Zig: a dataframe (pandas equivalent) and a plotting library.
 
 ```zig
 const zcore = @import("zcore");
@@ -15,56 +15,77 @@ t.fill(1.0);
 t.get(&[_]usize{ 0, 1 }).* = 42.0;
 ```
 
-## Why contribute?
+## Installation
 
-- **Low barrier to entry right now** -> the codebase is small, modular, and heavily commented. You don't need to be a linear algebra expert to make a meaningful PR.
-- **Clear roadmap** -> there's a detailed [implementation plan](implementation_plan.md) with bite-sized tasks: reshape, transpose, broadcasting, element-wise ops, and more.
-- **Learn by doing** -> contribute to a real library while deepening your understanding of Zig, memory management, SIMD, and numerical computing.
-- **Zero deps** -> no build system headaches, no bloated dependencies. Just `zig build test`.
-- **Your kind of people** -> no AI-generated code. Just humans writing thoughtful, commented Zig.
+Add `zcore` as a dependency in `build.zig.zon`:
+
+```sh
+zig fetch --save https://github.com/ka1rav6/zcore/archive/refs/tags/v0.1.0.tar.gz
+```
+
+Then import the module in your `build.zig`:
+
+```zig
+const zcore = b.dependency("zcore", .{
+    .target = target,
+    .optimize = optimize,
+});
+exe.root_module.addImport("zcore", zcore.module("zcore"));
+```
 
 ## Quick start
 
 ```sh
 git clone https://github.com/ka1rav6/zcore
 cd zcore
-chmod +x ./run_tests.sh
-./run_tests # run the tests
-zig build example1 # run the first example
+zig build test        # run the test suite
+zig build example1    # run the first example
 ```
 
-Requires Zig **0.15.2+**.
+Requires Zig **0.17.0-dev.1158+1d1193aa7** (see CI for exact pinned version).
 
-## Current state
+## Why contribute?
 
-|           Feature          |    Status         |
-|----------------------------|-------------------|
-| Generic `Tensor(T)`        | majorly completed |
-| Shape / strides            | majorly completed |
-| row-major storage          | majorly completed |
-| `init`, `fill`, `zeroes`   |      completed    |
-| Multi-dimensional indexing (`get`) | completed |
-| Memory ownership (views)   | majorly completed |
-| Reshape, transpose, slice  | majorly completed |
-| Element-wise arithmetic    | Soon |
-| Broadcasting               | Soon |
-| Matrix arithmetics         | Soon |
-| Full NumPy-level API       | Soon |
+- **Low barrier to entry** — the codebase is small, modular, and heavily commented. You don't need to be a linear algebra expert to make a meaningful PR.
+- **Clear roadmap** — there's a detailed [implementation plan](implementation_plan.md) with bite-sized tasks: reshape, transpose, broadcasting, element-wise ops, and more.
+- **Learn by doing** — contribute to a real library while deepening your understanding of Zig, memory management, SIMD, and numerical computing.
+- **Zero deps** — no build system headaches, no bloated dependencies. Just `zig build test`.
+- **Your kind of people** — no AI-generated code. Just humans writing thoughtful, commented Zig.
 
-## How to contribute
+## Current state (v0.1.0)
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
-2. Pick something (a logical next step) from the [implementation plan](implementation_plan.md) or read the issues for something.
-3. Read [STYLE_GUIDE.md](STYLE_GUIDE.md).
-4. Open a PR.
+| Feature                    | Status  |
+|----------------------------|---------|
+| Generic `Tensor(T)`        | Done    |
+| Shape / strides            | Done    |
+| Row-major storage          | Done    |
+| `init`, `fill`, `zeroes`   | Done    |
+| Multi-dimensional indexing | Done    |
+| Memory ownership (views)   | Done    |
+| Transpose, slice, resize   | Done    |
+| Broadcasting               | Done    |
+| 0-length tensor support    | Done    |
+| Element-wise arithmetic    | Planned |
+| Matrix arithmetic          | Planned |
+| Full NumPy-level API       | Planned |
 
-Every function must have tests. Every design decision must be explained in comments. Contributions of all sizes are welcome — whether it's a bug fix, a new feature, or just better documentation.
+See the [implementation plan](implementation_plan.md) for the full roadmap.
+
+## Documentation
+
+- [Implementation Plan](implementation_plan.md) — phased roadmap from v0.1.0 through v1.0
+- [Style Guide](STYLE_GUIDE.md) — code conventions
+- [Contributing Guide](CONTRIBUTING.md) — how to get involved
+- [Changelog](CHANGELOG.md) — release history
 
 ## How to run
-1. Tests    : ```bash ./run_tests.sh```
-2. Examples : ```bash zig build example1 #or other examples accordingly```
 
+| Command              | Description           |
+|----------------------|-----------------------|
+| `zig build test`     | Run all tests         |
+| `zig build run`      | Run the executable    |
+| `zig build example1` | Run the first example |
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

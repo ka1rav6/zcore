@@ -14,17 +14,17 @@
 
 ## Versioning Scheme
 
-| Prefix | Meaning |
-|--------|---------|
-| `v0.0.x` | Core tensor skeleton -> shape, strides, memory, dtypes, basic constructors, indexing |
-| `v0.1.x` | Shape/view manipulation -> reshape, transpose, slice, flatten, permute, expand, squeeze, iterator |
-| `v0.2.x` | Arithmetic & broadcasting -> element-wise ops, comparisons, reductions |
-| `v0.3.x` | Linear algebra -> matmul (progressive), decompositions, norms, determinants |
-| `v0.4.x` | Random, serialization, utils -> distributions, save/load, seeding |
-| `v0.5.x` | Neural network primitives -> convolution, pooling, loss functions, activations |
-| `v0.6.x` | Autograd -> computational graph, gradient tape, backward pass |
-| `v0.7.x` | Performance -> SIMD vectorization, multithreading, BLAS integration |
-| `v1.0`   | Stable API -> benchmarks, docs, packaging, README, examples |
+| Prefix | Status | Meaning |
+|--------|--------|---------|
+| `v0.0.x` |  Released | Core tensor skeleton -> shape, strides, memory, dtypes, basic constructors, indexing |
+| `v0.1.x` |  Current | Shape/view manipulation -> reshape, transpose, slice, flatten, permute, expand, squeeze, iterator |
+| `v0.2.x` |  Planned | Arithmetic & broadcasting -> element-wise ops, comparisons, reductions |
+| `v0.3.x` |  Planned | Linear algebra -> matmul (progressive), decompositions, norms, determinants |
+| `v0.4.x` |  Planned | Random, serialization, utils -> distributions, save/load, seeding |
+| `v0.5.x` |  Planned | Neural network primitives -> convolution, pooling, loss functions, activations |
+| `v0.6.x` |  Planned | Autograd -> computational graph, gradient tape, backward pass |
+| `v0.7.x` |  Planned | Performance -> SIMD vectorization, multithreading, BLAS integration |
+| `v1.0`   |  Planned | Stable API -> benchmarks, docs, packaging, README, examples |
 
 ---
 ## Phase 1: Core Tensor -> v0.0.x
@@ -57,9 +57,9 @@
 - [x] Element count
 - [x] `zeroes` fills with 0
 - [x] `set` / `get` / `at` round-trip
-- [x] `fromSlice` correctness
+- [x] `from_slice` correctness
 - [x] Type rejection at comptime for non-numeric types
-- [x] Edge cases: 0-d tensor (scalar), 0-size dimension
+- [x] Edge cases: 0-d tensor (scalar), 0-size dimension (zero-length shapes)
 
 ### Infrastructure
 - [x] Build system (`build.zig`, `build.zig.zon`)
@@ -83,8 +83,8 @@
 | Operation | Description | Notes |
 |-----------|-------------|-------|
 | `reshape(new_shape)` | Change shape if element count matches | May need copy if non-contiguous |
-| `transpose(dims?)` | General n-d transpose; default = reverse | Already done for 2d |
-| `slice(ranges)` | Extract view over hyper-rectangle | Already done for 1st dim |
+| `transpose(dims?)` | General n-d transpose; default = reverse | Done for 2d |
+| `slice(ranges)` | Extract view over hyper-rectangle | Done for 1st dim |
 | `flatten()` | Collapse to 1-d contiguous view | |
 | `permute(dims)` | Arbitrary axis reordering (stride swap) | |
 | `unsqueeze(dim)` / `expandDim(dim)` | Add a dimension of size 1 | |
@@ -440,17 +440,17 @@ For every op in v0.2.x, v0.3.x, v0.5.x, define:
 
 ## Milestone Summary
 
-| Version | Theme | Key Deliverable | Depends On |
-|---------|-------|----------------|------------|
-| v0.0.x | Core Tensor | `Tensor(T)` with init/destroy/index/basic constructors | Zig + allocators mastered |
-| v0.1.x | Shape Manipulation | Views: reshape, transpose, permute, slice, iterator | v0.0.x |
-| v0.2.x | Arithmetic | Element-wise ops, broadcasting, reductions | v0.1.x |
-| v0.3.x | Linear Algebra | matmul, LU, QR, SVD, eig | v0.2.x |
-| v0.4.x | Random & I/O | Distributions, save/load | v0.2.x (uses arithmetic) |
-| v0.5.x | NN Primitives | conv, pool, loss, activations | v0.2.x, v0.3.x |
-| v0.6.x | Autograd | Gradient tape, backward pass | v0.5.x (needs NN ops) |
-| v0.7.x | Performance | SIMD, threading, BLAS | v0.6.x (freeze API first) |
-| v1.0   | Stable | Docs, benchmarks, package, CI polish | v0.7.x |
+| Version | Status | Theme | Key Deliverable | Depends On |
+|---------|--------|-------|----------------|------------|
+| v0.0.x | ✅ Released | Core Tensor | `Tensor(T)` with init/destroy/index/basic constructors | Zig + allocators mastered |
+| v0.1.x | 🔄 Current | Shape Manipulation | Views: reshape, transpose, permute, slice, iterator | v0.0.x |
+| v0.2.x | 📋 Planned | Arithmetic | Element-wise ops, broadcasting, reductions | v0.1.x |
+| v0.3.x | 📋 Planned | Linear Algebra | matmul, LU, QR, SVD, eig | v0.2.x |
+| v0.4.x | 📋 Planned | Random & I/O | Distributions, save/load | v0.2.x (uses arithmetic) |
+| v0.5.x | 📋 Planned | NN Primitives | conv, pool, loss, activations | v0.2.x, v0.3.x |
+| v0.6.x | 📋 Planned | Autograd | Gradient tape, backward pass | v0.5.x (needs NN ops) |
+| v0.7.x | 📋 Planned | Performance | SIMD, threading, BLAS | v0.6.x (freeze API first) |
+| v1.0   | 📋 Planned | Stable | Docs, benchmarks, package, CI polish | v0.7.x |
 
 ---
 
@@ -550,4 +550,4 @@ Every public function must have a corresponding test. Tests should cover:
 
 ---
 
-*Last updated: 2026-07-07*
+*Last updated: 2026-07-09*
